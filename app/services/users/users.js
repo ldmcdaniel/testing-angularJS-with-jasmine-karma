@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('api.users', [])
-  .factory('Users', function() {
+  .factory('Users', function () {
     var Users = {};
     var userList = [
       {
