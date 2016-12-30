@@ -11,6 +11,9 @@ describe('Pokemon factory', function () {
       'type': { 'name': 'electric' }
     }]
   };
+  var RESPONSE_ERROR = {
+    'detail': 'Not found.'
+  };
 
   beforeEach(angular.mock.module('api.pokemon'));
   beforeEach(inject(function (_Pokemon_, _$q_, _$httpBackend_) {
@@ -25,8 +28,9 @@ describe('Pokemon factory', function () {
 
   describe('findByName()', function () {
     var result;
+
     beforeEach(function () {
-      resutl = {};
+      result = {};
       spyOn(Pokemon, "findByName").and.callThrough();
     });
 
@@ -51,5 +55,23 @@ describe('Pokemon factory', function () {
       expect(result.sprites.front_default).toContain('.png');
       expect(result.types[0].type.name).toEqual('electric');
     });
-  })
+
+    it('should return a 404 when called with an invalid name', function () {
+      var search = 'godzilla';
+
+      $httpBackend.whenGET(API + search).respond(404, $q.reject(RESPONSE_ERROR));
+
+      expect(Pokemon.findByName).not.toHaveBeenCalled();
+      expect(result).toEqual({});
+
+      Pokemon.findByName(search)
+      .catch(function (res) {
+        result = res;
+      });
+      $httpBackend.flush();
+
+      expect(Pokemon.findByName).toHaveBeenCalledWith(search);
+      expect(result.detail).toEqual('Not found.');
+    });
+  });
 });
